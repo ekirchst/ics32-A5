@@ -37,40 +37,41 @@ def send(server: str, port: int, username: str, password: str, message: str, bio
             response = server_conn.recv(3021).decode()
             response_json = json.loads(response)
             print(response_json)
-        if "token" in str(response_json):
-            temp = str(response_json).index("token")
-            token = str(response_json)[temp+9:-3]
-        if message:
-            action = "post"
-            formatted_message = ds_protocol.format_for_json(action, username, password, user_token=token, message=message, bio=bio)
-            print(formatted_message)
-        elif bio:
-            action = "bio"
-            formatted_message = ds_protocol.format_for_json(action, username, password, user_token=token, message=message, bio=bio)
-            print(formatted_message)
-        else:
-            action = "join"
-            formatted_message = ds_protocol.format_for_json(action, username, password, user_token=token, message=message, bio=bio)
-            print(formatted_message)
-        formatted_message = ds_protocol.format_for_json(action, username, password, user_token=token, message=message, bio=bio)
-        print(formatted_message)
-        data_str = json.dumps(formatted_message)
-        print(f"{data_str}")
-        server_conn.sendall(data_str.encode())
-
-        response = server_conn.recv(3021).decode()
-        response_json = json.loads(response)
-        print(response_json)
-        if "response" in response_json:
-            if response_json["response"]["type"] == "ok":
-                return True
+            if "token" in str(response_json):
+                temp = str(response_json).index("token")
+                token = str(response_json)[temp+9:-3]
+            if message:
+                print("i got here")
+                action = "post"
+                formatted_message = ds_protocol.format_for_json(action, username, password, user_token=token, message=message, bio=bio)
+                print(formatted_message)
+            elif bio:
+                action = "bio"
+                formatted_message = ds_protocol.format_for_json(action, username, password, user_token=token, message=message, bio=bio)
+                print(formatted_message)
             else:
-                error_message = response_json["response"]["message"]
-                print("Error:", error_message)
+                action = "join"
+                formatted_message = ds_protocol.format_for_json(action, username, password, user_token=token, message=message, bio=bio)
+                print(formatted_message)
+            formatted_message = ds_protocol.format_for_json(action, username, password, user_token=token, message=message, bio=bio)
+            print(formatted_message)
+            data_str = json.dumps(formatted_message)
+            print(f"{data_str}")
+            server_conn.sendall(data_str.encode())
+
+            response = server_conn.recv(3021).decode()
+            response_json = json.loads(response)
+            print(response_json)
+            if "response" in response_json:
+                if response_json["response"]["type"] == "ok":
+                    return True
+                else:
+                    error_message = response_json["response"]["message"]
+                    print("Error:", error_message)
+                    return False
+            else:
+                print("Invalid response from server")
                 return False
-        else:
-            print("Invalid response from server")
-            return False
     except Exception as e:
         print(f"there was an error:  {e}")
     return
