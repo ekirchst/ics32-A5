@@ -9,10 +9,16 @@ import user as user
 import OpenWeather as opw
 import LastFM as lfm
 import WebAPI
+from ds_client import send
 # port = 168.235.86.101
 
 
 if __name__ == "__main__":
+    
+    send('168.235.86.101', 3021, "newguyheheha", "passworzd", "I will see this if i join")
+    
+
+
     '''
     main function containing 2 sets of test cases and the code to start my entire program
     '''
