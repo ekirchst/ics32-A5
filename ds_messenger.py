@@ -38,8 +38,8 @@ class DirectMessenger:
             server_conn.sendall(data_str.encode())
             response = server_conn.recv(3021).decode()
             response_json = json.loads(response)
-            print(response_json)
-            print(data_str)
+            #print(response_json)
+            #print(data_str)
             if "response" in response_json:
                 if response_json["response"]["type"] == "ok":
                     return True
@@ -50,7 +50,19 @@ class DirectMessenger:
             else:
                 print("Invalid response from server")
                 return False
-		
+    
+    def send_format(self, message:str, recipient:str) -> bool:
+            formated = ({
+                "token": self.token,
+                "directmessage": {
+                    "entry": message,
+                    "recipient": recipient,
+                    'timestamp': timestamp
+                }
+                })
+            data_str = json.dumps(formated)
+            return(data_str)
+    
     def retrieve_new(self) -> list:
         messages = []
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_conn:
@@ -68,7 +80,7 @@ class DirectMessenger:
                 if response_json["response"]["type"] == "ok":
                     msg_list = response_json['response']['messages']
                     for msg in msg_list:
-                        print(msg)
+                        #print(msg)
                         msg_object = DirectMessage()
                         msg_object.recipient = msg['from']
                         msg_object.message = msg['message']
@@ -99,7 +111,7 @@ class DirectMessenger:
                 if response_json["response"]["type"] == "ok":
                     msg_list = response_json['response']['messages']
                     for msg in msg_list:
-                        print(msg)
+                        #print(msg)
                         msg_object = DirectMessage()
                         msg_object.recipient = msg['from']
                         msg_object.message = msg['message']
@@ -113,7 +125,32 @@ class DirectMessenger:
                 print("Invalid response from server")
         return messages
     
+    def retrieve_all_string(self) -> list:
+        messages = []
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_conn:
+            server_conn.connect((self.dsuserver, port))
+            formated = ({
+                "token": self.token,
+                "directmessage": 'all'
+                })
 
+            data_str = json.dumps(formated)
+            server_conn.sendall(data_str.encode())
+            response = server_conn.recv(3021).decode()
+            response_json = json.loads(response)
+            if "response" in response_json:
+                if response_json["response"]["type"] == "ok":
+                    msg_list = response_json['response']['messages']
+                    for msg in msg_list:
+                        messages.append(msg)
+                    
+                else:
+                    error_message = response_json["response"]["message"]
+                    print("Error:", error_message)
+            else:
+                print("Invalid response from server")
+        return messages
+    
     def return_user(self):
         return self.username
     

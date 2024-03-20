@@ -82,29 +82,28 @@ class Post(dict):
 class Profile:
    
 
-    def __init__(self, dsuserver=None, username=None, password=None, bio=None):
+    def __init__(self, dsuserver=None, username=None, password=None, ):
         self.dsuserver = dsuserver  # REQUIRED
         self.username = username  # REQUIRED
         self.password = password  # REQUIRED
-        self.bio = bio            # OPTIONAL
-        self._posts = []         # OPTIONAL
+        self.received_messages = []
+        self.sent_messages = []
 
+    def save_messages(self, dict1):
+        for i in dict1:
+            self.received_messages.append(i)
 
-    def add_post(self, post: Post) -> None:
-        self._posts.append(post)
+    def load_messages(self):
+        for i in self.received_messages:
+            print(i)
 
+    def save_sent(self, dict2):
+        self.sent_messages.append(dict2)
+        print(self.sent_messages)
 
-    def del_post(self, index: int) -> bool:
-        try:
-            del self._posts[index]
-            return True
-        except IndexError:
-            return False
-
-   
-    def get_posts(self) -> list[Post]:
-        return self._posts
-
+    def load_sent(self):
+        for i in self.sent_messages:
+            print(i)
     
     def save_profile(self, path: str) -> None:
         p = Path(path)
