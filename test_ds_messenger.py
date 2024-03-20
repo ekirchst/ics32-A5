@@ -2,6 +2,7 @@ import socket
 import json
 import time
 from ds_messenger import DirectMessage, DirectMessenger
+import Profile as p
 
 server = "168.235.86.101"
 port = 3021
@@ -12,7 +13,7 @@ def start():
         server_conn.connect((server, port))
         stuff = {}
         stuff["join"] = {
-                        "username": 'greenmmm',
+                        "username": 'green1',
                         "password": 'heheha',
                         "token": ""
                     }
@@ -25,9 +26,14 @@ def start():
                     temp = str(response_json).index("token")
                     token = str(response_json)[temp+9:-3]
 
-        mew = DirectMessenger("168.235.86.101", 'greenmmm', 'heheha')
+
+
+        mew = DirectMessenger("168.235.86.101", 'green1', 'heheha')
+        username = mew.return_user()
+        password = mew.return_pass()
         mew.token = token
-        print(mew.retrieve_all())
+        print(mew.retrieve_new())
+        mew.send("facc", 'help')
 
 
 

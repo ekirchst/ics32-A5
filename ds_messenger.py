@@ -39,6 +39,7 @@ class DirectMessenger:
             response = server_conn.recv(3021).decode()
             response_json = json.loads(response)
             print(response_json)
+            print(data_str)
             if "response" in response_json:
                 if response_json["response"]["type"] == "ok":
                     return True
@@ -67,7 +68,7 @@ class DirectMessenger:
                 if response_json["response"]["type"] == "ok":
                     msg_list = response_json['response']['messages']
                     for msg in msg_list:
-                        
+                        print(msg)
                         msg_object = DirectMessage()
                         msg_object.recipient = msg['from']
                         msg_object.message = msg['message']
@@ -98,7 +99,7 @@ class DirectMessenger:
                 if response_json["response"]["type"] == "ok":
                     msg_list = response_json['response']['messages']
                     for msg in msg_list:
-                        
+                        print(msg)
                         msg_object = DirectMessage()
                         msg_object.recipient = msg['from']
                         msg_object.message = msg['message']
@@ -111,4 +112,11 @@ class DirectMessenger:
             else:
                 print("Invalid response from server")
         return messages
- 
+    
+
+    def return_user(self):
+        return self.username
+    
+    def return_pass(self):
+        return self.password
+    
