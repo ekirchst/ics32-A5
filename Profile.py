@@ -89,6 +89,9 @@ class Profile:
         self.received_messages = []
         self.sent_messages = []
 
+    def del_messages(self):
+        self.received_messages.clear()
+
     def save_messages(self, dict1):
         for i in dict1:
             self.received_messages.append(i)
@@ -97,20 +100,29 @@ class Profile:
         for i in self.received_messages:
             print(i)
 
-    def save_sent(self, dict2):
-        self.sent_messages.append(dict2)
-        print(self.sent_messages)
+    def save_sent(self, message):
+        self.sent_messages.append(message)
 
     def load_sent(self):
         for i in self.sent_messages:
             print(i)
     
+    def del_sent(self):
+        self.sent_messages.clear()
+
     def save_profile(self, path: str) -> None:
         p = Path(path)
         if p.exists() and p.suffix == '.dsu':
             try:
+                profile_data = {
+                'username': self.username,
+                'password': self.password,
+                'dsuserver': self.dsuserver,
+                'received_messages': self.received_messages,
+                'sent_messages': self.sent_messages
+                }
                 f = open(p, 'w')
-                json.dump(self.__dict__, f)
+                json.dump(profile_data, f)
                 f.close()
             except Exception as ex:
                 raise DsuFileError("Error while attempting"
@@ -128,10 +140,8 @@ class Profile:
                 self.username = obj['username']
                 self.password = obj['password']
                 self.dsuserver = obj['dsuserver']
-                self.bio = obj['bio']
-                for post_obj in obj['_posts']:
-                    post = Post(post_obj['entry'], post_obj['timestamp'])
-                    self._posts.append(post)
+                self.received_messages = obj['received_messages']
+                self.sent_messages = obj['sent_messages']
                 f.close()
             except Exception as ex:
                 raise DsuProfileError(ex)

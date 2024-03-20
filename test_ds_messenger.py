@@ -35,16 +35,20 @@ def start():
         person = p.Profile("168.235.86.101", 'green1', 'heheha')
         currrent_directory = pathlib.Path.cwd()
         path = f"{currrent_directory}\\profile.dsu"
-        with open(path, 'w')as file:
-            person.save_profile(path)
+        if not pathlib.Path(path).exists():
+            with open(path, 'w') as file:
+                person.save_profile(path)
+        else:
+            person.load_profile(path)
         mew.token = token
-        person.load_messages()
         person.save_messages(mew.retrieve_all_string())
-        mew.send("sugma", 'help')
-        person.save_sent(mew.send_format("facc", 'help'))
+        mew.send("cap111", 'help')
+        person.save_sent(mew.send_format("test3", 'help'))
         person.save_profile(path)
-        person.load_messages()
         person.load_sent()
+        #person.del_messages()
+        #person.del_sent()
+        person.save_profile(path)
 
 if __name__ == '__main__':
         start()

@@ -60,7 +60,7 @@ class DirectMessenger:
                     'timestamp': timestamp
                 }
                 })
-            data_str = json.dumps(formated)
+            data_str = formated
             return(data_str)
     
     def retrieve_new(self) -> list:
