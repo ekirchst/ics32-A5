@@ -24,16 +24,10 @@ def start():
         if "token" in str(response_json):
                     temp = str(response_json).index("token")
                     token = str(response_json)[temp+9:-3]
-    
-        formated = DirectMessage()
-        formated.recipient = 'help'
-        formated.message = 'fuck you bitch'
-        formated.timestamp = timestamp
 
         mew = DirectMessenger("168.235.86.101", 'greenmmm', 'heheha')
         mew.token = token
-
-        mew.send("fuck you bitch", 'help')
+        print(mew.retrieve_all())
 
 
 
