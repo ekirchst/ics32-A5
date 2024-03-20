@@ -1,7 +1,12 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
 from typing import Text
-
+import json
+import socket
+import time
+from ds_messenger import DirectMessenger
+import Profile as p
+import pathlib
 
 class Body(tk.Frame):
     def __init__(self, root, recipient_selected_callback=None):
@@ -149,7 +154,7 @@ class MainApp(tk.Frame):
         # You must implement this! You must configure and
         # instantiate your DirectMessenger instance after this line.
         #self.direct_messenger = ... continue!
-
+        self.direct_messanger = DirectMessenger
         # After all initialization is complete,
         # call the _draw method to pack the widgets
         # into the root frame
