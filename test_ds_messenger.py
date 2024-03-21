@@ -41,11 +41,15 @@ def start():
         else:
             person.load_profile(path)
         mew.token = token
+        print(mew.retrieve_all())
+        temp = mew.retrieve_all()
+        for i in temp:
+              print(i.recipient)
         person.save_messages(mew.retrieve_all_string())
-        mew.send("cap111", 'help')
+        #mew.send("cap111", 'help')
         person.save_sent(mew.send_format("test3", 'help'))
         person.save_profile(path)
-        person.load_sent()
+        #person.load_sent()
         #person.del_messages()
         #person.del_sent()
         person.save_profile(path)

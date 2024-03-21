@@ -4,6 +4,7 @@
 import socket
 import time
 import json
+from ds_protocol import format_for_json
 port = 3021
 timestamp = str(time.time())
 
@@ -23,9 +24,14 @@ class DirectMessenger:
         self.password = password
 		
     def send(self, message:str, recipient:str) -> bool:
+        if self.token == None:
+            self.connect()
         # must return true if message successfully sent, false if send failed.
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_conn:
             server_conn.connect((self.dsuserver, port))
+            action = '1'
+            formated = format_for_json(action, user_token=self.token, message = message, recipient = recipient)
+            '''
             formated = ({
                 "token": self.token,
                 "directmessage": {
@@ -34,6 +40,7 @@ class DirectMessenger:
                     'timestamp': timestamp
                 }
                 })
+            '''
             data_str = json.dumps(formated)
             server_conn.sendall(data_str.encode())
             response = server_conn.recv(3021).decode()
@@ -65,13 +72,18 @@ class DirectMessenger:
     
     def retrieve_new(self) -> list:
         messages = []
+        if self.token == None:
+            self.connect()
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_conn:
             server_conn.connect((self.dsuserver, port))
-            formated = ({
+            action = '2'
+            formated = format_for_json(action, self.token)
+            '''
+            = ({
                 "token": self.token,
                 "directmessage": 'new'
                 })
-
+            '''
             data_str = json.dumps(formated)
             server_conn.sendall(data_str.encode())
             response = server_conn.recv(3021).decode()
@@ -79,6 +91,7 @@ class DirectMessenger:
             if "response" in response_json:
                 if response_json["response"]["type"] == "ok":
                     msg_list = response_json['response']['messages']
+                    print(msg_list)
                     for msg in msg_list:
                         #print(msg)
                         msg_object = DirectMessage()
@@ -96,13 +109,18 @@ class DirectMessenger:
  
     def retrieve_all(self) -> list:
         messages = []
+        if self.token == None:
+            self.connect()
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_conn:
             server_conn.connect((self.dsuserver, port))
+            action = '3'
+            formated = format_for_json(action, self.token)
+            '''
             formated = ({
                 "token": self.token,
                 "directmessage": 'all'
                 })
-
+            '''
             data_str = json.dumps(formated)
             server_conn.sendall(data_str.encode())
             response = server_conn.recv(3021).decode()
@@ -157,3 +175,21 @@ class DirectMessenger:
     def return_pass(self):
         return self.password
     
+    def connect(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_conn:
+            server_conn.connect((self.dsuserver, port))
+            stuff = {}
+            stuff["join"] = {
+                            "username": 'green1',
+                            "password": 'heheha',
+                            "token": ""
+                        }
+            data_str = json.dumps(stuff)
+            server_conn.sendall(data_str.encode())
+            response = server_conn.recv(3021).decode()
+            response_json = json.loads(response)
+            print(response_json)   
+            if "token" in str(response_json):
+                temp = str(response_json).index("token")
+                token = str(response_json)[temp+9:-3]
+                self.token = token

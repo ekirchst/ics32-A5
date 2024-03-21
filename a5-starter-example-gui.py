@@ -4,9 +4,11 @@ from typing import Text
 import json
 import socket
 import time
-from ds_messenger import DirectMessenger
+from ds_messenger import DirectMessenger, DirectMessage
 import Profile as p
 import pathlib
+server = "168.235.86.101"
+
 
 class Body(tk.Frame):
     def __init__(self, root, recipient_selected_callback=None):
@@ -108,7 +110,7 @@ class Footer(tk.Frame):
         self.check_new_button['state'] = tk.DISABLED
 
     def _draw(self):
-        save_button = tk.Button(master=self, text="Send", width=20)
+        save_button = tk.Button(master=self, text="Send", width=20, command=self.send_click)
         save_button.pack(fill=tk.BOTH, side=tk.RIGHT, padx=5, pady=5)
 
         self.check_new_button = tk.Button(master=self, text="Check New", width=20, command=self.check_new_click)
@@ -139,10 +141,9 @@ class NewContactDialog(tk.simpledialog.Dialog):
 
         self.password_label = tk.Label(frame, width=30, text="Password")
         self.password_label.pack()
-        self.password_entry = tk.Entry(frame, width=30)  # Show asterisks for password
+        self.password_entry = tk.Entry(frame, width=30)
         self.password_entry.pack()
         
-        # Populate entry fields if values are provided during initialization
         if self.server:
             self.server_entry.insert(tk.END, self.server)
         if self.user:
@@ -164,72 +165,68 @@ class MainApp(tk.Frame):
         self.password = None
         self.server = None
         self.recipient = None
-        # You must implement this! You must configure and
-        # instantiate your DirectMessenger instance after this line.
-        #self.direct_messenger = ... continue!
-        self.direct_messanger = None
-        # After all initialization is complete,
-        # call the _draw method to pack the widgets
-        # into the root frame
+        self.direct_messenger = None
         self._draw()
-        self.body.insert_contact("studentexw23") # adding one example student.
+        self.body.insert_contact("test student") # adding one example student.
 
     def send_message(self):
-        # You must implement this!
-        pass
+        message_txt = self.body.get_text_entry()
+        print("recipient", self.recipient, type(self.recipient))
+        print("message", message_txt, type(message_txt))
+        print("direct messenger", self.direct_messenger, type(self.direct_messenger))
+
+        if self.recipient and message_txt and self.direct_messenger:
+            print("i got here")
+            send_bool = self.direct_messenger.send(message=message_txt, recipient=self.recipient)
+            print("grapes")
+            if send_bool:
+                self.publish(f"You: {message_txt}")
+            else:
+                print("Could not send message.")
+            self.body.set_text_entry('')
 
     def add_contact(self):
         contact_name = tk.simpledialog.askstring("Add Contact", "Enter the name of the new contact:")
         if contact_name:
             self.body.insert_contact(contact_name)
-        # You must implement this!
-        # Hint: check how to use tk.simpledialog.askstring to retrieve
-        # the name of the new contact, and then use one of the body
-        # methods to add the contact to your contact list
-        pass
 
     def recipient_selected(self, recipient):
         self.recipient = recipient
 
     def configure_server(self):
         ud = NewContactDialog(self.root, "Configure Account",
-                            self.username, self.password, self.server)
-        if ud.result is not None:  # Check if user clicked OK in the dialog
+                              self.username, self.password, self.server)
+        if ud.user and ud.pwd and ud.server:
             self.username = ud.user
             self.password = ud.pwd
             self.server = ud.server
-            # Check if server is configured
-            if self.server is not None:
-                # You must implement this!
-                # You must configure and instantiate your
-                # DirectMessenger instance after this line.
-                currrent_directory = pathlib.Path.cwd()
-                path = f"{currrent_directory}\\profile.dsu"
-                person = p.Profile(self.server, self.username, self.password)
-                if not pathlib.Path(path).exists():
-                    with open(path, 'w') as file:
-                        person.save_profile(path)
-                else:
-                    person.load_profile(path)
-                self.direct_messenger = DirectMessenger(self.server, self.username, self.password)
+            # You must implement this!
+            # You must configure and instantiate your
+            # DirectMessenger instance after this line.
+            self.direct_messenger = DirectMessenger(dsuserver=self.server, username=self.username, password=self.password)
+            print("igothere")
 
     def publish(self, message:str):
-        # You must implement this!
-        pass
+        if "You:" in message:
+            self.body.insert_user_message(message)
+        else:
+            self.body.insert_contact_message(message)
+
 
     def check_new(self):
         if self.direct_messenger:
             new_messages = self.direct_messenger.retrieve_new()
-            for message in new_messages:
-                self.body.insert_contact_message(message.message)
-        self.footer.enable_check_new_button()
+            print(new_messages)
+            for msg in new_messages:
+                print(msg.recipient)
+                print(msg.message)
+                self.body.insert_contact_message(f'{msg.recipient}: {msg.message}')
+        self.after(2000, self.check_new)
 
     def _draw(self):
-        # Build a menu and add it to the root frame.
         menu_bar = tk.Menu(self.root)
         self.root['menu'] = menu_bar
         menu_file = tk.Menu(menu_bar)
-
         menu_bar.add_cascade(menu=menu_file, label='File')
         menu_file.add_command(label='New')
         menu_file.add_command(label='Open...')
@@ -237,15 +234,10 @@ class MainApp(tk.Frame):
 
         settings_file = tk.Menu(menu_bar)
         menu_bar.add_cascade(menu=settings_file, label='Settings')
-        settings_file.add_command(label='Add Contact',
-                                  command=self.add_contact)
-        settings_file.add_command(label='Configure DS Server',
-                                  command=self.configure_server)
+        settings_file.add_command(label='Add Contact', command=self.add_contact)
+        settings_file.add_command(label='Configure DS Server', command=self.configure_server)
 
-        # The Body and Footer classes must be initialized and
-        # packed into the root window.
-        self.body = Body(self.root,
-                         recipient_selected_callback=self.recipient_selected)
+        self.body = Body(self.root, recipient_selected_callback=self.recipient_selected)
         self.body.pack(fill=tk.BOTH, side=tk.TOP, expand=True)
         self.footer = Footer(self.root, send_callback=self.send_message, check_new_callback=self.check_new)
         self.footer.pack(fill=tk.BOTH, side=tk.BOTTOM)
