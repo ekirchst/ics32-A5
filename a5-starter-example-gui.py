@@ -85,24 +85,34 @@ class Body(tk.Frame):
         entry_editor_scrollbar.pack(fill=tk.Y, side=tk.LEFT,
                                     expand=False, padx=0, pady=0)
 
-
 class Footer(tk.Frame):
-    def __init__(self, root, send_callback=None):
+    def __init__(self, root, send_callback=None, check_new_callback=None):
         tk.Frame.__init__(self, root)
         self.root = root
         self._send_callback = send_callback
+        self._check_new_callback = check_new_callback
         self._draw()
 
     def send_click(self):
         if self._send_callback is not None:
             self._send_callback()
 
+    def check_new_click(self):  
+        if self._check_new_callback is not None:
+            self._check_new_callback()
+
+    def enable_check_new_button(self):
+        self.check_new_button['state'] = tk.NORMAL
+
+    def disable_check_new_button(self):
+        self.check_new_button['state'] = tk.DISABLED
+
     def _draw(self):
         save_button = tk.Button(master=self, text="Send", width=20)
-        # You must implement this.
-        # Here you must configure the button to bind its click to
-        # the send_click() function.
         save_button.pack(fill=tk.BOTH, side=tk.RIGHT, padx=5, pady=5)
+
+        self.check_new_button = tk.Button(master=self, text="Check New", width=20, command=self.check_new_click)
+        self.check_new_button.pack(fill=tk.BOTH, side=tk.RIGHT, padx=5, pady=5)
 
         self.footer_label = tk.Label(master=self, text="Ready.")
         self.footer_label.pack(fill=tk.BOTH, side=tk.LEFT, padx=5)
@@ -120,22 +130,25 @@ class NewContactDialog(tk.simpledialog.Dialog):
         self.server_label = tk.Label(frame, width=30, text="DS Server Address")
         self.server_label.pack()
         self.server_entry = tk.Entry(frame, width=30)
-        self.server_entry.insert(tk.END, self.server)
         self.server_entry.pack()
 
         self.username_label = tk.Label(frame, width=30, text="Username")
         self.username_label.pack()
         self.username_entry = tk.Entry(frame, width=30)
-        self.username_entry.insert(tk.END, self.user)
         self.username_entry.pack()
 
-        # You need to implement also the region for the user to enter
-        # the Password. The code is similar to the Username you see above
-        # but you will want to add self.password_entry['show'] = '*'
-        # such that when the user types, the only thing that appears are
-        # * symbols.
-        #self.password...
-
+        self.password_label = tk.Label(frame, width=30, text="Password")
+        self.password_label.pack()
+        self.password_entry = tk.Entry(frame, width=30)  # Show asterisks for password
+        self.password_entry.pack()
+        
+        # Populate entry fields if values are provided during initialization
+        if self.server:
+            self.server_entry.insert(tk.END, self.server)
+        if self.user:
+            self.username_entry.insert(tk.END, self.user)
+        if self.pwd:
+            self.password_entry.insert(tk.END, self.pwd)
 
     def apply(self):
         self.user = self.username_entry.get()
@@ -154,7 +167,7 @@ class MainApp(tk.Frame):
         # You must implement this! You must configure and
         # instantiate your DirectMessenger instance after this line.
         #self.direct_messenger = ... continue!
-        self.direct_messanger = DirectMessenger
+        self.direct_messanger = None
         # After all initialization is complete,
         # call the _draw method to pack the widgets
         # into the root frame
@@ -166,6 +179,9 @@ class MainApp(tk.Frame):
         pass
 
     def add_contact(self):
+        contact_name = tk.simpledialog.askstring("Add Contact", "Enter the name of the new contact:")
+        if contact_name:
+            self.body.insert_contact(contact_name)
         # You must implement this!
         # Hint: check how to use tk.simpledialog.askstring to retrieve
         # the name of the new contact, and then use one of the body
@@ -177,21 +193,36 @@ class MainApp(tk.Frame):
 
     def configure_server(self):
         ud = NewContactDialog(self.root, "Configure Account",
-                              self.username, self.password, self.server)
-        self.username = ud.user
-        self.password = ud.pwd
-        self.server = ud.server
-        # You must implement this!
-        # You must configure and instantiate your
-        # DirectMessenger instance after this line.
+                            self.username, self.password, self.server)
+        if ud.result is not None:  # Check if user clicked OK in the dialog
+            self.username = ud.user
+            self.password = ud.pwd
+            self.server = ud.server
+            # Check if server is configured
+            if self.server is not None:
+                # You must implement this!
+                # You must configure and instantiate your
+                # DirectMessenger instance after this line.
+                currrent_directory = pathlib.Path.cwd()
+                path = f"{currrent_directory}\\profile.dsu"
+                person = p.Profile(self.server, self.username, self.password)
+                if not pathlib.Path(path).exists():
+                    with open(path, 'w') as file:
+                        person.save_profile(path)
+                else:
+                    person.load_profile(path)
+                self.direct_messenger = DirectMessenger(self.server, self.username, self.password)
 
     def publish(self, message:str):
         # You must implement this!
         pass
 
     def check_new(self):
-        # You must implement this!
-        pass
+        if self.direct_messenger:
+            new_messages = self.direct_messenger.retrieve_new()
+            for message in new_messages:
+                self.body.insert_contact_message(message.message)
+        self.footer.enable_check_new_button()
 
     def _draw(self):
         # Build a menu and add it to the root frame.
@@ -216,7 +247,7 @@ class MainApp(tk.Frame):
         self.body = Body(self.root,
                          recipient_selected_callback=self.recipient_selected)
         self.body.pack(fill=tk.BOTH, side=tk.TOP, expand=True)
-        self.footer = Footer(self.root, send_callback=self.send_message)
+        self.footer = Footer(self.root, send_callback=self.send_message, check_new_callback=self.check_new)
         self.footer.pack(fill=tk.BOTH, side=tk.BOTTOM)
 
 
@@ -225,7 +256,7 @@ if __name__ == "__main__":
     main = tk.Tk()
 
     # 'title' assigns a text value to the Title Bar area of a window.
-    main.title("ICS 32 Distributed Social Messenger")
+    main.title("WELCOME TO CRACKA BARREL")
 
     # This is just an arbitrary starting point. You can change the value
     # around to see how the starting size of the window changes.
