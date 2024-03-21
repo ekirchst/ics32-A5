@@ -80,7 +80,6 @@ class Post(dict):
 
 
 class Profile:
-   
 
     def __init__(self, dsuserver=None, username=None, password=None, ):
         self.dsuserver = dsuserver  # REQUIRED
@@ -106,7 +105,7 @@ class Profile:
     def load_sent(self):
         for i in self.sent_messages:
             print(i)
-    
+
     def del_sent(self):
         self.sent_messages.clear()
 
@@ -115,11 +114,11 @@ class Profile:
         if p.exists() and p.suffix == '.dsu':
             try:
                 profile_data = {
-                'username': self.username,
-                'password': self.password,
-                'dsuserver': self.dsuserver,
-                'received_messages': self.received_messages,
-                'sent_messages': self.sent_messages
+                    'username': self.username,
+                    'password': self.password,
+                    'dsuserver': self.dsuserver,
+                    'received_messages': self.received_messages,
+                    'sent_messages': self.sent_messages
                 }
                 f = open(p, 'w')
                 json.dump(profile_data, f)
@@ -130,7 +129,6 @@ class Profile:
         else:
             raise DsuFileError("Invalid DSU file path or type")
 
-    
     def load_profile(self, path: str) -> None:
         p = Path(path)
         if p.exists() and p.suffix == '.dsu':

@@ -1,7 +1,9 @@
 # Evan Kirchstter
 # ekirchst@uci.edu
 # 59946460
-
+'''
+Module to Format Messages to server
+'''
 import json
 import time
 from collections import namedtuple
@@ -11,7 +13,7 @@ DataTuple = namedtuple('DataTuple', ['foo', 'baz'])
 
 def extract_json(json_msg: str) -> DataTuple:
     '''
-      Call the json.loads function on a json 
+      Call the json.loads function on a json
       string and convert it to a DataTuple object
       TODO: replace the pseudo placeholder keys with actual DSP protocol keys
     '''
@@ -25,7 +27,11 @@ def extract_json(json_msg: str) -> DataTuple:
     return DataTuple(foo, baz)
 
 
-def format_for_json(action_type, user_token=None, message = None, recipient = None):
+def format_for_json(action_type, user_token=None,
+                    message=None, recipient=None):
+    '''
+    Function to format strings
+    '''
     formated = None
     if action_type == "1":
         formated = ({
